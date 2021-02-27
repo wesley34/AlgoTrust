@@ -1,15 +1,7 @@
-const document = require("./document/document.json");
-const { algorandApi } = require('./algorandApi.js')
+const wrapped_document = require("./document/wrapped.json");
+const queryStore = require('./queryStore.js')
 const { getData,verifySignature } = require("@govtechsg/open-attestation");
-const algosdk = require('algosdk');
 
-
-
-
-
-
-
-// our custom verifier will be valid only if the document version is not https://schema.openattestation.com/2.0/schema.json
 const customVerifier = {
   skip: async () => {
     return {
@@ -23,65 +15,40 @@ const customVerifier = {
       }
     };
   },
-  test: () => document.version === "https://schema.openattestation.com/2.0/schema.json",
-  verify: async document => {
-    
+  test: () => wrapped_document.version === "https://schema.openattestation.com/2.0/schema.json",
+  verify: async (wrapped_document) => {
+    var isTampered = verifySignature(wrapped_document) !== true;
+    const documentData = getData(wrapped_document);
 
-    var isTampered = verifySignature(document) === true;
-    const documentData = getData(document);
-
-    if (!isTampered ) {
-      return {
-        type: "DOCUMENT_INTEGRITY",
-        name: "CustomVerifier",
-        data: documentData.name,
-        reason: {
-          code: 1,
-          codeString: "TAMPERED",
-          message: `Document name is ${documentData.name}`
-        },
-        status: "INVALID"
-      };
+    if (isTampered) {
+      console.log("Error : Document is tampered")
+      return false;
     }
 
-    var hashedMerkleroot = algosdk.encodeObj(document.signature.merkleRoot);
-    var isExist = await algorandApi(hashedMerkleroot);
-    
-    
+    //console.log("Success ! The document is verified.");
+    //console.log("document data : ", documentData);
+    const merkleRoot = wrapped_document.signature.merkleRoot;
+    const isFound = queryStore(merkleRoot);
 
-    
-    if (!isExist){
-    return {
-      type: "DOCUMENT_INTEGRITY",
-      name: "CustomVerifier",
-      data: documentData.name,
-      reason: {
-        code: 2,
-        codeString: "INVALID_MERKLE_ROOT",
-        message: `Document name is ${documentData.name}`
-      },
-      status: "INVALID"
-    };
-  }
-  else{
-    return {
-      type: "DOCUMENT_INTEGRITY",
-      name: "CustomVerifier",
-      data: documentData.name,
-      status: "VALID"
-      };
+    if (!isFound) {
+      console.log("Error : Cannot find the document in Document Store.");
+      return false;
     }
 
+    return true;
   }
 };
 
 
 const customVerificationBuilder  = () =>{
-  if (customVerifier.test(document)) {
-    return customVerifier.verify(document);
+  if (customVerifier.test(wrapped_document)) {
+    if (!customVerifier.verify(wrapped_document))
+      return false; 
   }
-  return customVerifier.skip(document);
+  customVerifier.skip(wrapped_document);
+
+  return true;
 }
 
-customVerificationBuilder().then(console.log).catch(console.log);
+customVerificationBuilder();
 

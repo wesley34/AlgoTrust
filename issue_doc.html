@@ -31,6 +31,16 @@ The above copyright notice and this permission notice shall be included in all c
   <link href="./assets/css/material-kit.css?v=2.0.7" rel="stylesheet" />
   <!-- CSS Just for demo purpose, don't include it in your project -->
   <link href="./assets/demo/demo.css" rel="stylesheet" />
+
+  <script>
+    const actualBtn = document.getElementById('actual-file-btn');
+    const fileChosen = document.getElementById('file-chosen');
+    
+    actualBtn.addEventListener('change', function(){
+      console.log(fileChosen);
+      fileChosen.textContent = this.files[0].name
+    })
+  </script>
 </head>
 
 <body class="index-page sidebar-collapse">
@@ -99,25 +109,18 @@ The above copyright notice and this permission notice shall be included in all c
               <form action=""> <!-- retrieve file here -->
                 <div class="row" style="margin-left: -8px;">
                   <div class="col-md-3" style="padding: 0; text-align: left; padding-right: 0px;">
-                    <label for="actual-file-btn" class="btn btn-info">Select File</label>
-                    <input id="actual-file-btn" style="visibility:hidden;" type="file">
-                  </div>
-                  <div class="col-md-5" style="padding: 0; margin-top: 14px; text-align: left;">
-                    <span id="file-chosen">No file chosen</span>
-                  </div>
-                  <div class="col-md-4">
-                    <input type="submit" class="btn btn-info btn-raised">
+                    <input
+                      id="actual-file-btn" 
+                      type="file"
+                      name="filename"
+                    >
+
+                    <input 
+                      type="submit" 
+                      class="btn btn-info btn-raised mt-3"
+                      onclick="myFunction()">
                   </div>
                 </div>
-
-                <script>
-                  const actualBtn = document.getElementById('actual-file-btn');
-                  const fileChosen = document.getElementById('file-chosen');
-                  
-                  actualBtn.addEventListener('change', function(){
-                    fileChosen.textContent = this.files[0].name
-                  })
-                </script>
 
                 <!-- <input type="file" id="myFile" name="filename"> -->
               </form>

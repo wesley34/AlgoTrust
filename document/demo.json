@@ -1,0 +1,12 @@
+{
+  "issuers": [
+    {
+      "documentStore": "0xabcdabcdabcdabcdabcdabcdabcdabcdabcdabcd",
+      "name": "University of Blockchain",
+      "identityProof": {
+        "type": "DNS-TXT",
+        "location": "example.com"
+      }
+    }
+  ]
+}
